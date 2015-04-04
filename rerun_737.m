@@ -18,6 +18,9 @@ total_iter = [];
     Cr = 15;%50
 
 
+
+
+
        
 
     % chair width
