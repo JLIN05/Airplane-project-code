@@ -64,14 +64,15 @@ fire_accel = 0.0000005;
 %person radius
 rad = 9;
 % personal comfort tolerance
-tol = 2*rad + 6.0;
+tol = 2*rad + 24.0;
+ftol = 2*rad + 6.0;
 
 deletions = [];
 
 % aisle stength
 as = 1.0;%1.0;60; %20;
 % chair strength
-cs = 380;%380;%130;%60;%30;%20;
+cs = 360;%380;%130;%60;%30;%20;
 % row stength 
 rs = 1.0;%10;
 %height of the wall
@@ -85,7 +86,7 @@ nc = 3;
 
 
 %set the potential function of the plane
-[ p,numx,numy,xdim,ydim ]=Boeing737_plane_block_one1(r,c,a,cw,rw,sd,cd,lr,wall,nc,as,rs,cs,ws,space_front,space_back,space_above,space_below,x_exit,y_exit);
+[ p,numx,numy,xdim,ydim ]=Boeing737_plane_block_one2(r,c,a,cw,rw,sd,cd,lr,wall,nc,as,rs,cs,ws,space_front,space_back,space_above,space_below,x_exit,y_exit);
 %adding chair
 [ pc]=chair_Boeing737(r,c,a,cw,rw,sd,cd,lr,wall,nc,as,rs,cs,ws,space_front,space_back,space_above,space_below,x_exit);
 %gradiant for particle local search
@@ -143,7 +144,7 @@ swarm(rand_indices(1:floor(fraction*swarm_size)),3,2)=ones(fraction*swarm_size,1
 % swarm(85,3,2) = rand;
 
 %setting parameter for panic susceptibility
-ps = 0.7;
+ps = 0.5;
 emo_thre = 0.7; %emotion threshold (when panic level>emo_thre*swarm(i,3,1)->freeze)
 
 
@@ -224,9 +225,9 @@ Cr = 15;%50
 
 
 
-% %outputting video
+% % %outputting video
 %  writerObj = VideoWriter('737_emo_clog.avi');
-%  writerObj = VideoWriter('C:\Users\Junyuan Lin\Desktop\Plane Project-clog\737_emo_clog', 'MPEG-4');
+%  writerObj = VideoWriter('C:\Users\Junyuan Lin\Dropbox\Pepp\Codes for Apr.9 edits\737_emo_clog', 'MPEG-4');
 % % %witerObj = VideoWriter('plane.avi','Uncompressed AVI');
 %  writerObj.FrameRate = 4;
 %  writerObj.Quality= 100;
@@ -238,23 +239,23 @@ Cr = 15;%50
 % an exit
 exits = zeros(8,2);
 exits(1,1) = space_out+wall+x_exit;
-%exits(2,1) = space_out+wall+x_exit;
+exits(2,1) = space_out+wall+x_exit;
 exits(3,1) = xdim-space_out-wall-x_exit;
 exits(4,1) = xdim-space_out-wall-x_exit;
-exits(5,1) = xdim/2.0-x_exit;
-exits(6,1) = xdim/2.0-x_exit;
-exits(7,1) = xdim/2.0+x_exit*3/2.0;
-exits(8,1) = xdim/2.0+x_exit*3/2.0;
+% exits(5,1) = xdim/2.0-x_exit;
+% exits(6,1) = xdim/2.0-x_exit;
+% exits(7,1) = xdim/2.0+x_exit*3/2.0;
+% exits(8,1) = xdim/2.0+x_exit*3/2.0;
 exits(1,2) = space_below;%+y_exit/2;
-%exits(2,2) = ydim-space_above;%-y_exit/2;
+exits(2,2) = ydim-space_above;%-y_exit/2;
 exits(3,2) = space_below;%+y_exit/2;
 exits(4,2) = ydim-space_above;%-y_exit/2;
-exits(5,2) = space_below;%+y_exit/2;
-exits(6,2) = ydim-space_above;%-y_exit/2;
-exits(7,2) = space_below;%+y_exit/2;
-exits(8,2) = ydim-space_above;%-y_exit/2;
+% exits(5,2) = space_below;%+y_exit/2;
+% exits(6,2) = ydim-space_above;%-y_exit/2;
+% exits(7,2) = space_below;%+y_exit/2;
+% exits(8,2) = ydim-space_above;%-y_exit/2;
 % exits(1,1) = exits(8,1);
-exits(2,1) = exits(8,1);
+% exits(2,1) = exits(8,1);
 
 dis = zeros(8,1);
 xdis = zeros(8,1);
@@ -373,14 +374,15 @@ for iter = 1: iterations
                     x2 = round((x+dx/2)*numx);
                     y2 = round((y+dy/2)*numy);
                     chair_repel = pc(x2,y2);
-                
-                    u = c3*(Ca/La * exp(-distance / La) - Cr/Lr * exp(-distance / Lr));
-                    %u = -c3/distance^2/chair_repel;
-                    fx(i) = fx(i) + u*dx/distance/(1-dq_f);
-                    fy(i) = fy(i) + u*dy/distance/(1-dq_f);
-                    fx(j) = fx(j) - u*dx/distance/(1+dq_f);
-                    fy(j) = fy(j) - u*dy/distance/(1+dq_f); 
                     
+                    if distance < ftol
+                        u = c3*(Ca/La * exp(-distance / La) - Cr/Lr * exp(-distance / Lr));
+                        %u = -c3/distance^2/chair_repel;
+                        fx(i) = fx(i) + u*dx/distance/(1-dq_f);
+                        fy(i) = fy(i) + u*dy/distance/(1-dq_f);
+                        fx(j) = fx(j) - u*dx/distance/(1+dq_f);
+                        fy(j) = fy(j) - u*dy/distance/(1+dq_f); 
+                    end
                     
                     if  dq>0
                             fq(i) = fq(i)+6*dq;
@@ -395,19 +397,19 @@ for iter = 1: iterations
                 end
 %========================================================================%                     
             
-                if abs(sqrt((swarm(i,1,1)-(x_exit/2))*(swarm(i,1,1)-(x_exit/2))+(swarm(i,1,2)-(ydim-space_above-wall_moving(iter)))*(swarm(i,1,2)-(ydim-space_above-wall_moving(iter)))))<15*rad
-                    dq=0.95-swarm(i,3,1);
-                    fq(i) = fq(i)+0.5*dq;
-                end
-%                 if abs(sqrt((swarm(i,1,1)-(xdim/2-x_exit/2))*(swarm(i,1,1)-(xdim/2-x_exit/2))+(swarm(i,1,2)-(ydim-space_above-wall_moving(iter)))*(swarm(i,1,2)-(ydim-space_above-wall_moving(iter)))))<15*rad
+%                 if abs(sqrt((swarm(i,1,1)-(x_exit/2))*(swarm(i,1,1)-(x_exit/2))+(swarm(i,1,2)-(ydim-space_above-wall_moving(iter)))*(swarm(i,1,2)-(ydim-space_above-wall_moving(iter)))))<15*rad
 %                     dq=0.95-swarm(i,3,1);
 %                     fq(i) = fq(i)+0.5*dq;
 %                 end
+                if abs(sqrt((swarm(i,1,1)-(xdim/2-x_exit/2))*(swarm(i,1,1)-(xdim/2-x_exit/2))+(swarm(i,1,2)-(ydim-space_above-wall_moving(iter)))*(swarm(i,1,2)-(ydim-space_above-wall_moving(iter)))))<15*rad
+                    dq=0.95-swarm(i,3,1);
+                    fq(i) = fq(i)+0.5*dq;
+                end
 %                 if abs(sqrt((swarm(i,1,1)-(xdim/2+x_exit/2))*(swarm(i,1,1)-(xdim/2+x_exit/2))+(swarm(i,1,2)-(wall_moving(iter)))*(swarm(i,1,2)-(wall_moving(iter)))))<15*rad
 %                     dq=0.95-swarm(i,3,1);
 %                     fq(i) = fq(i)+0.5*dq;
 %                 end
-                if abs(sqrt((swarm(i,1,1)-(x_exit/2))*(swarm(i,1,1)-(x_exit/2))+(swarm(i,1,2)-(wall_moving(iter)))*(swarm(i,1,2)-(wall_moving(iter)))))<15*rad
+                if abs(sqrt((swarm(i,1,1)-(xdim/2+x_exit/2))*(swarm(i,1,1)-(xdim/2+x_exit/2))+(swarm(i,1,2)-(wall_moving(iter)))*(swarm(i,1,2)-(wall_moving(iter)))))<15*rad
                     dq=0.95-swarm(i,3,1);
                     fq(i) = fq(i)+0.5*dq;
                 end
@@ -523,18 +525,18 @@ for iter = 1: iterations
             scatter_plot(:,2) = temp_2;
             scatter_plot(:,3) = ones(swarm_size,1);         
     
-%         if swarm_size == floor(0.1*172)
-%             total_iter(1) = iter;
-%         elseif swarm_size == floor(0.05*172)
-%             total_iter(2) = iter;
-%         elseif swarm_size == 0
-%             total_iter(3) = iter;
-%         end
+        if swarm_size == floor(0.1*172)
+            total_iter(1) = iter;
+        elseif swarm_size == floor(0.05*172)
+            total_iter(2) = iter;
+        elseif swarm_size == 0
+            total_iter(3) = iter;
+        end
             
             
     % Plotting the swarm
     
-    if mod(iter,500)==0
+    if mod(iter,200)==0
 %        clf
 %        hold on
         
@@ -552,10 +554,10 @@ for iter = 1: iterations
          wfig2 = rectangle('Position',[xdim/2.0,ydim-space_above-wall_moving(iter),2*x_exit,wall_moving(iter)],'FaceColor','r');
          %grid off
          set(gcf, 'Position', [100 100 2.5*(xdim-space_out) 5*(ydim-space_above-space_below)]);
-         frame = getframe;
+         %frame = getframe;
          %writeVideo(writerObj,frame);
 %         
-%         %pause(4)
+         %pause(4)
     end
     if(swarm_size == 0) 
             break; end

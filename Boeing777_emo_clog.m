@@ -91,12 +91,13 @@ fire_accel = 0.0000005;
 %person radius
 rad = 9;
 % personal comfort tolerance
-tol = 2*rad + 20.0;
+tol = 2*rad + 24.0;
+ftol = 2*rad + 6.0;
 
 % aisle stength
 as = 1.0;%1.0;60; %20;
 % chair strength
-cs = 150;%130;%60;%30;%20;
+cs = 360;%130;%60;%30;%20;
 % row stength 
 rs = 1.0;%10;
 
@@ -105,7 +106,7 @@ c3 = 1;%80.0;%40;35;%65
 
 
 %set the potential function of the plane
-[ p,numx,numy,xdim,ydim ]=Boeing777_plane_block_one4(rb,re1,re2,cb,ce,ab,ae,cwb,cwe,rwb,rwe,sd,cd,lrb,lre,ncb,nce,as,rs,cs,space_front,space_back,x_exit);
+[ p,numx,numy,xdim,ydim ]=Boeing777_plane_block3(rb,re1,re2,cb,ce,ab,ae,cwb,cwe,rwb,rwe,sd,cd,lrb,lre,ncb,nce,as,rs,cs,space_front,space_back,x_exit);
 %adding chair
 [ pc]=chair_Boeing777(rb,re1,re2,cb,ce,ab,ae,cwb,cwe,rwb,rwe,sd,cd,lrb,lre,ncb,nce,as,rs,cs,space_front,space_back,x_exit);
 %gradiant for particle local search
@@ -156,7 +157,7 @@ s = zeros(swarm_size, 4, 2);
 
 %%========================March 17th edits===============================%%
 %for random selecting a fraction of agents to be panic and freeze
-fraction = 0.2;%0.1;%0.2;
+fraction = 0.0;%0.1;%0.2;
 rand_indices = randperm(swarm_size);
 swarm(rand_indices(1:floor(fraction*swarm_size)),3,2)=ones(fraction*swarm_size,1);  
 % this can be random later like 0.5 + rand(1:floor(fraction*swarm_size))*0.5;
@@ -165,7 +166,7 @@ swarm(rand_indices(1:floor(fraction*swarm_size)),3,2)=ones(fraction*swarm_size,1
 % swarm(85,3,2) = rand;
 
 %setting parameter for panic susceptibility
-ps = 0.7;
+ps = 0.5;
 emo_thre = 0.7; %emotion threshold (when panic level>emo_thre*swarm(i,3,1)->freeze)
 
 
@@ -355,22 +356,22 @@ Cr = 15;%50
 exits = zeros(8,2);
     exits(1,1) = x_exit/2.0;
     exits(2,1) = x_exit/2.0;
-     exits(3,1) = xdim-x_exit/2.0;
-%     exits(4,1) = xdim-x_exit/2.0;
+    exits(3,1) = xdim-x_exit/2.0;
+    exits(4,1) = xdim-x_exit/2.0;
     exits(5,1) = x_exit+space_front+2*rb*rwb+space_back+0.5*x_exit;
     exits(6,1) = x_exit+space_front+2*rb*rwb+space_back+0.5*x_exit;
-    exits(7,1) = 2.5*x_exit+2*space_front+2*rb*rwb+2*re1*rwe+2*space_back;
-    exits(8,1) = 2.5*x_exit+2*space_front+2*rb*rwb+2*re1*rwe+2*space_back;
+%    exits(7,1) = 2.5*x_exit+2*space_front+2*rb*rwb+2*re1*rwe+2*space_back;
+%     exits(8,1) = 2.5*x_exit+2*space_front+2*rb*rwb+2*re1*rwe+2*space_back;
     exits(1,2) = y_exit/2;
     exits(2,2) = ydim-y_exit/2;
     exits(3,2) = y_exit/2;
-%     exits(4,2) = ydim-y_exit/2;
+    exits(4,2) = ydim-y_exit/2;
     exits(5,2) = y_exit/2;
     exits(6,2) = ydim-y_exit/2;
-    exits(7,2) = y_exit/2;
-    exits(8,2) = ydim-y_exit/2;
-%   exits(1,1) = exits(3,1);
-%   exits(2,1) = exits(3,1);
+%    exits(7,2) = y_exit/2;
+%     exits(8,2) = ydim-y_exit/2;
+%     exits(1,1) = exits(3,1);
+%     exits(2,1) = exits(3,1);
     
 
 
@@ -477,9 +478,9 @@ rectangle('Position',[0,ydim-y_exit,x_exit,y_exit],'FaceColor','g')
 rectangle('Position',[xdim-x_exit,0,x_exit,y_exit],'FaceColor','g')
 rectangle('Position',[xdim-x_exit,ydim-y_exit,x_exit,y_exit],'FaceColor','g')
 rectangle('Position',[x_exit+space_front+2*rwb*rb+space_back-x_exit/2,0,x_exit,y_exit],'FaceColor','g')
-rectangle('Position',[x_exit+space_front+2*rwb*rb+space_back-x_exit/2,ydim-y_exit,x_exit,y_exit],'FaceColor','r')
+rectangle('Position',[x_exit+space_front+2*rwb*rb+space_back-x_exit/2,ydim-y_exit,x_exit,y_exit],'FaceColor','g')
 rectangle('Position',[2*x_exit+2*space_front+2*rwb*rb+2*rwe*re1+2*space_back-x_exit/2,0,x_exit,y_exit],'FaceColor','g')
-rectangle('Position',[2*x_exit+2*space_front+2*rwb*rb+2*rwe*re1+2*space_back-x_exit/2,ydim-y_exit,x_exit,y_exit],'FaceColor','g')
+rectangle('Position',[2*x_exit+2*space_front+2*rwb*rb+2*rwe*re1+2*space_back-x_exit/2,ydim-y_exit,x_exit,y_exit],'FaceColor','r')
 axis([0 xdim 0 ydim]);
 %grid off
 set(gcf, 'Position', [100 100 2.5*(xdim) 5*(ydim)]);
@@ -546,12 +547,14 @@ for iter = 1: iterations
                         y2 = round((y+dy/2)*numy);
                         %chair_repel = pc(x2,y2);
 
-                    u = c3*(Ca/La * exp(-distance / La) - Cr/Lr * exp(-distance / Lr));
-                    %u = -c3/distance^2/chair_repel;
-                    fx(i) = fx(i) + u*dx/distance/(1-dq_f);
-                    fy(i) = fy(i) + u*dy/distance/(1-dq_f);
-                    fx(j) = fx(j) - u*dx/distance/(1+dq_f);
-                    fy(j) = fy(j) - u*dy/distance/(1+dq_f); 
+                        if distance < ftol
+                            u = c3*(Ca/La * exp(-distance / La) - Cr/Lr * exp(-distance / Lr));
+                            %u = -c3/distance^2/chair_repel;
+                            fx(i) = fx(i) + u*dx/distance/(1-dq_f);
+                            fy(i) = fy(i) + u*dy/distance/(1-dq_f);
+                            fx(j) = fx(j) - u*dx/distance/(1+dq_f);
+                            fy(j) = fy(j) - u*dy/distance/(1+dq_f); 
+                        end
                     
                     
                     if  dq>0
@@ -567,16 +570,16 @@ for iter = 1: iterations
 %========================================================================%                  
                         
                     
-                    if abs(sqrt((swarm(i,1,1)-(xdim-x_exit/2.0))*(swarm(i,1,1)-(xdim-x_exit/2.0))+...
+                    if abs(sqrt((swarm(i,1,1)-(2.5*x_exit+2*rb*rwb+2*space_front+2*space_back+2*re1*rwe))*(swarm(i,1,1)-(2.5*x_exit+2*rb*rwb+2*space_front+2*space_back+2*re1*rwe))+...
                             (swarm(i,1,2)-(ydim-wall_moving(iter)))*(swarm(i,1,2)-(ydim-wall_moving(iter)))))<15*rad
                         dq=0.95-swarm(i,3,1);
                         fq(i) = fq(i)+0.5*dq;
                     end
-%                     if abs(sqrt((swarm(i,1,1)-(xdim-x_exit/2.0))*(swarm(i,1,1)-(xdim-x_exit/2.0))+...
-%                             (swarm(i,1,2)-(wall_moving(iter)))*(swarm(i,1,2)-(wall_moving(iter)))))<15*rad
-%                         dq=0.95-swarm(i,3,1);
-%                         fq(i) = fq(i)+0.5*dq;
-%                     end
+                    if abs(sqrt((swarm(i,1,1)-(2.5*x_exit+2*rb*rwb+2*space_front+2*space_back+2*re1*rwe))*(swarm(i,1,1)-(2.5*x_exit+2*rb*rwb+2*space_front+2*space_back+2*re1*rwe))+...
+                            (swarm(i,1,2)-(wall_moving(iter)))*(swarm(i,1,2)-(wall_moving(iter)))))<15*rad
+                        dq=0.95-swarm(i,3,1);
+                        fq(i) = fq(i)+0.5*dq;
+                    end
                     %2.5*x_exit+2*rb*rwb+2*space_front+2*space_back+2*re1*rwe
                     %1.5*x_exit+2*rb*rwb+space_front+space_back
         end
@@ -680,13 +683,13 @@ for iter = 1: iterations
           [ v_count,v_max,v_ave,bin_v ] = v_data( v(i), v_count, v_sum,v_max,partition_v, bin_v );
           
     end
-%         if swarm_size == floor(0.1*291)
-%             total_iter(1) = iter;
-%         elseif swarm_size == floor(0.05*291)
-%             total_iter(2) = iter;
-%         elseif swarm_size == 0
-%             total_iter(3) = iter;
-%         end
+        if swarm_size == floor(0.1*291)
+            total_iter(1) = iter;
+        elseif swarm_size == floor(0.05*291)
+            total_iter(2) = iter;
+        elseif swarm_size == 0
+            total_iter(3) = iter;
+        end
         
     %for setting data for scatter plotting
             scatter_plot = zeros (swarm_size,3);
@@ -696,7 +699,7 @@ for iter = 1: iterations
     
     % Plotting the swarm
     
-    if mod(iter,500)==0
+    if mod(iter,1000)==0
 %        clf
 %        hold on
 %         for i = 1: swarm_size
@@ -711,7 +714,7 @@ for iter = 1: iterations
          pfig = scatter(swarm(:, 1, 1),swarm(:, 1, 2),1200,scatter_plot,'filled');
          %pfig = plot(swarm(:, 1, 1), swarm(:, 1, 2), 'o', 'MarkerFaceColor', 'b' , 'MarkerEdgeColor', 'b','MarkerSize',4.0*rad); % drawing swarm movements
          qfig = quiver(swarm(:,1,1),swarm(:,1,2),swarm(:,2,1),swarm(:,2,2),0.5,'k');
-         wfig1 = rectangle('Position',[x_exit+space_front+2*rwb*rb+space_back-x_exit/2,ydim-space_above-wall_moving(iter),x_exit,wall_moving(iter)],'FaceColor','r');
+         wfig1 = rectangle('Position',[2*x_exit+2*space_front+2*rwb*rb+2*rwe*re1+2*space_back-x_exit/2,ydim-space_above-wall_moving(iter),x_exit,wall_moving(iter)],'FaceColor','r');
          %wfig2 = rectangle('Position',[x_exit+space_front+2*rwb*rb+space_back-x_exit/2,ydim-space_above-wall_moving(iter),x_exit,wall_moving(iter)],'FaceColor','r');
          %grid off
          set(gcf, 'Position', [100 100 2.5*(xdim-space_out) 5*(ydim-space_above-space_below)]);

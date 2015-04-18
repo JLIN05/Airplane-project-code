@@ -99,7 +99,7 @@ c3 = 1;%80.0;%40;35;%65
 
 
 %set the potential function of the plane
-[ p,numx,numy,xdim,ydim ]=Boeing777_plane_block_one3(rb,re1,re2,cb,ce,ab,ae,cwb,cwe,rwb,rwe,sd,cd,lrb,lre,ncb,nce,as,rs,cs,space_front,space_back,x_exit);
+[ p,numx,numy,xdim,ydim ]=Boeing777_plane_block3(rb,re1,re2,cb,ce,ab,ae,cwb,cwe,rwb,rwe,sd,cd,lrb,lre,ncb,nce,as,rs,cs,space_front,space_back,x_exit);
 %adding chair
 [ pc]=chair_Boeing777(rb,re1,re2,cb,ce,ab,ae,cwb,cwe,rwb,rwe,sd,cd,lrb,lre,ncb,nce,as,rs,cs,space_front,space_back,x_exit);
 %gradiant for particle local search
@@ -334,16 +334,16 @@ exits(3,1) = xdim-x_exit/2;
 exits(4,1) = xdim-x_exit/2;
 exits(5,1) = x_exit+space_front+2*rb*rwb+space_back+0.5*x_exit;
 exits(6,1) = x_exit+space_front+2*rb*rwb+space_back+0.5*x_exit;
-exits(7,1) = 2.5*x_exit+2*space_front+2*rb*rwb+2*re1*rwe+2*space_back;
-exits(8,1) = 2.5*x_exit+2*space_front+2*rb*rwb+2*re1*rwe+2*space_back;
+% exits(7,1) = 2.5*x_exit+2*space_front+2*rb*rwb+2*re1*rwe+2*space_back;
+% exits(8,1) = 2.5*x_exit+2*space_front+2*rb*rwb+2*re1*rwe+2*space_back;
 exits(1,2) = y_exit/2;
 exits(2,2) = ydim-y_exit/2;
 exits(3,2) = y_exit/2;
 exits(4,2) = ydim-y_exit/2;
 exits(5,2) = y_exit/2;
 exits(6,2) = ydim-y_exit/2;
-exits(7,2) = y_exit/2;
-exits(8,2) = ydim-y_exit/2;
+% exits(7,2) = y_exit/2;
+% exits(8,2) = ydim-y_exit/2;
 
 
 dis = zeros(8,1);
@@ -588,15 +588,17 @@ for iter = 1: iterations
         %deleting the agent who exits the plane
         swarm(deletions,:,:)=[];
         swarm_size=length(swarm(:,1,1));
-%         if swarm_size <= 0.05*291
-%             total_iter = iter;
-%         end
-        
-    
+        if swarm_size == floor(0.1*291)
+            total_iter(1) = iter;
+        elseif swarm_size == floor(0.05*291)
+            total_iter(2) = iter;
+        elseif swarm_size == 0
+            total_iter(3) = iter;
+        end    
     
     % Plotting the swarm
     
-    if mod(iter,20)==0
+    if mod(iter,1000)==0
 %        clf
 %        hold on
 %         for i = 1: swarm_size

@@ -91,12 +91,13 @@ fire_accel = 0.0000005;
 %person radius
 rad = 9;
 % personal comfort tolerance
-tol = 2*rad + 20.0;
+tol = 2*rad + 24.0;
+ftol = 2*rad + 6.0;
 
 % aisle stength
 as = 1.0;%1.0;60; %20;
 % chair strength
-cs = 150;%130;%60;%30;%20;
+cs = 340;%130;%60;%30;%20;
 % row stength 
 rs = 1.0;%10;
 
@@ -105,7 +106,7 @@ c3 = 1;%80.0;%40;35;%65
 
 
 %set the potential function of the plane
-[ p,numx,numy,xdim,ydim ]=Boeing777_plane_block_one2(rb,re1,re2,cb,ce,ab,ae,cwb,cwe,rwb,rwe,sd,cd,lrb,lre,ncb,nce,as,rs,cs,space_front,space_back,x_exit);
+[ p,numx,numy,xdim,ydim ]=Boeing777_plane_block2(rb,re1,re2,cb,ce,ab,ae,cwb,cwe,rwb,rwe,sd,cd,lrb,lre,ncb,nce,as,rs,cs,space_front,space_back,x_exit);
 %adding chair
 [ pc]=chair_Boeing777(rb,re1,re2,cb,ce,ab,ae,cwb,cwe,rwb,rwe,sd,cd,lrb,lre,ncb,nce,as,rs,cs,space_front,space_back,x_exit);
 %gradiant for particle local search
@@ -324,7 +325,7 @@ Cr = 15;%50
 
 
 
-%outputting video
+% %outputting video
 %  writerObj = VideoWriter('777_emo_oneblock.avi');
 %  writerObj = VideoWriter('C:\Users\Junyuan Lin\Dropbox\Pepp\plane project_clog\777_emo_oneblock', 'MPEG-4');
 % % %witerObj = VideoWriter('plane.avi','Uncompressed AVI');
@@ -341,19 +342,19 @@ exits(1,1) = x_exit/2.0;
 exits(2,1) = x_exit/2.0;
 exits(3,1) = xdim-x_exit/2.0;
 exits(4,1) = xdim-x_exit/2.0;
-exits(5,1) = x_exit+space_front+2*rb*rwb+space_back+0.5*x_exit;
-%exits(6,1) = x_exit+space_front+2*rb*rwb+space_back+0.5*x_exit;
+% exits(5,1) = x_exit+space_front+2*rb*rwb+space_back+0.5*x_exit;
+% exits(6,1) = x_exit+space_front+2*rb*rwb+space_back+0.5*x_exit;
 exits(7,1) = 2.5*x_exit+2*space_front+2*rb*rwb+2*re1*rwe+2*space_back;
 exits(8,1) = 2.5*x_exit+2*space_front+2*rb*rwb+2*re1*rwe+2*space_back;
 exits(1,2) = y_exit/2;
 exits(2,2) = ydim-y_exit/2;
 exits(3,2) = y_exit/2;
 exits(4,2) = ydim-y_exit/2;
-exits(5,2) = y_exit/2;
-%exits(6,2) = ydim-y_exit/2;
+% exits(5,2) = y_exit/2;
+% exits(6,2) = ydim-y_exit/2;
 exits(7,2) = y_exit/2;
 exits(8,2) = ydim-y_exit/2;
-%exits(2,1) = exits(8,1);
+% exits(2,1) = exits(8,1);
     
 
 
@@ -513,13 +514,14 @@ for iter = 1: iterations
                     x2 = round((x+dx/2)*numx);
                     y2 = round((y+dy/2)*numy);
                     %chair_repel = pc(x2,y2);
-                
-                    u = c3*(Ca/La * exp(-distance / La) - Cr/Lr * exp(-distance / Lr));
-                    %u = -c3/distance^2/chair_repel;
-                    fx(i) = fx(i) + u*dx/distance/(1-dq);
-                    fy(i) = fy(i) + u*dy/distance/(1-dq);
-                    fx(j) = fx(j) - u*dx/distance/(1+dq);
-                    fy(j) = fy(j) - u*dy/distance/(1+dq); 
+                    if distance < ftol
+                        u = c3*(Ca/La * exp(-distance / La) - Cr/Lr * exp(-distance / Lr));
+                        %u = -c3/distance^2/chair_repel;
+                        fx(i) = fx(i) + u*dx/distance/(1-dq);
+                        fy(i) = fy(i) + u*dy/distance/(1-dq);
+                        fx(j) = fx(j) - u*dx/distance/(1+dq);
+                        fy(j) = fy(j) - u*dy/distance/(1+dq);
+                    end
                     
                     
                         if  dq>0
@@ -541,11 +543,11 @@ for iter = 1: iterations
                         dq=0.95-swarm(i,3,1);
                         fq(i) = fq(i)+0.5*dq;
                     end
-%                     if abs(sqrt((swarm(i,1,1)-(2.5*x_exit+2*rb*rwb+2*space_front+2*space_back+2*re1*rwe))*(swarm(i,1,1)-(2.5*x_exit+2*rb*rwb+2*space_front+2*space_back+2*re1*rwe))+...
-%                             (swarm(i,1,2)-(wall_moving(iter)))*(swarm(i,1,2)-(wall_moving(iter)))))<15*rad
-%                         dq=0.95-swarm(i,3,1);
-%                         fq(i) = fq(i)+0.5*dq;
-%                     end
+                    if abs(sqrt((swarm(i,1,1)-(1.5*x_exit+2*rb*rwb+space_front+space_back))*(swarm(i,1,1)-(1.5*x_exit+2*rb*rwb+space_front+space_back))+...
+                            (swarm(i,1,2)-(wall_moving(iter)))*(swarm(i,1,2)-(wall_moving(iter)))))<15*rad
+                        dq=0.95-swarm(i,3,1);
+                        fq(i) = fq(i)+0.5*dq;
+                    end
                     %2.5*x_exit+2*rb*rwb+2*space_front+2*space_back+2*re1*rwe
                     %1.5*x_exit+2*rb*rwb+space_front+space_back
         end
@@ -654,7 +656,7 @@ for iter = 1: iterations
     
     % Plotting the swarm
     
-    if mod(iter,500)==0
+    if mod(iter,1000)==0
 %        clf
 %        hold on
 %         for i = 1: swarm_size
